@@ -31,11 +31,14 @@ class LastInventoriedBien extends Component{
                                 <LastInventoriedBienCard
                                     id = {item.id}
                                     numero_activo={item.numero_activo}  
+                                    subnumero={item.subnumero}
                                     descripcion={item.descripcion} 
                                     material={item.material} 
                                     color={item.color} 
                                     marca={item.marca}
                                     modelo={item.modelo} 
+                                    serie={item.serie}
+                                    estado={item.estado}
                                     imagen={item.imagen}
                                 /> : null
                         )

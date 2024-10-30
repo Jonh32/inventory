@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { StyleSheet, Text, View, Image, TextInput } from 'react-native';
+import { Modal, StyleSheet, Text, View, Image, TextInput, Button } from 'react-native';
 import * as FileSystem from 'expo-file-system'
 import { Dimensions } from "react-native";
 import ActionButton from 'react-native-action-button';
@@ -18,18 +18,24 @@ class LastInventoriedBienCard extends Component {
     this.state = {
       id: this.props.id,
       numero_activo: this.props.numero_activo,
+      subnumero: this.props.subnumero,
       descripcion: this.props.descripcion,
       material: this.props.material,
       color: this.props.color,
       marca: this.props.marca,
       modelo: this.props.modelo,
+      serie: this.props.serie,
+      estado: this.props.estado,
       imagen: this.props.imagen || "https://http2.mlstatic.com/D_NQ_NP_2X_924991-MLM70333484951_072023-F.webp", // Imagen por defecto
       imagenBytes: this.props.imagenBytes || null,
       textCodigoDeBarrasTextInput: '',  // Nuevo estado para el código de barras
+      isModalVisible: false,  // Estado para controlar la visibilidad del modal
     };
     this.updateImage = this.updateImage.bind(this);
     this.updateBien = this.updateBien.bind(this);
+    this.editBien = this.editBien.bind(this);
     this.changeTextInput = this.changeTextInput.bind(this);  // Vinculamos el método
+    this.saveChanges = this.saveChanges.bind(this);
   }
 
   // Método para capturar el texto del código de barras
@@ -61,6 +67,7 @@ class LastInventoriedBienCard extends Component {
       const binario = await FileSystem.readAsStringAsync(result.assets[0].uri, {encoding: FileSystem.EncodingType.Base64}) 
       //console.log(binario)
       this.setState({ imagenBytes: binario})
+      await this.updateBien();
     }
   }
   async updateBien() {
@@ -77,11 +84,35 @@ class LastInventoriedBienCard extends Component {
         alert(response.message)
       }
     }
+  }
 
+  async editBien(){
+    //Cambia el estado para mostrar el modal
+    this.setState({isModalVisible: true});
+  }
+
+  async saveChanges() {
+    // Aquí podrías llamar a una función que actualice la base de datos y el API REST    
+    //Llenar en la base de datos
+    const {id, descripcion, subnumero, material, color, marca, modelo, serie, estado} = this.state;
+    console.log("ID:", this.state.id);
+    console.log("Descripcion:", this.state.descripcion);
+    console.log("Subnumero:", this.state.subnumero);
+    console.log("Material:", this.state.material);
+    console.log("Color:", this.state.color);
+    console.log("Marca:", this.state.marca);
+    console.log("Modelo:", this.state.modelo);
+    console.log("Serie:", this.state.serie);
+    console.log("Estado:", this.state.estado);    
+    await APISQLite.updateBien(id, descripcion, material, marca, color, serie, estado, modelo, subnumero);
+    this.setState({ isModalVisible: false }); // Oculta el modal después de guardar
+
+    //Subir a la API REST
   }
 
   render() {
     const {id, numero_activo, descripcion, material, color, marca, modelo, imagen } = this.state;
+    let isModalVisible = this.state.isModalVisible;
     return (
       <View>        
         <View style={[styles.lastInventoriedBienCard, styles.shadowProp, { paddingTop: 50 }]}> 
@@ -111,10 +142,73 @@ class LastInventoriedBienCard extends Component {
             renderIcon={() => (<IconsMaterialIcons name="edit" style={styles.actionButtonIcon} />)}
             shadowStyle={styles.floatinRightTopBtn}
             buttonColor="rgba(255,255,255,1)"
-            onPress={this.updateBien}
+            onPress={this.editBien}
             hideShadow={false}
           />
         </View>
+        {/* Modal para el formulario de edición */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isModalVisible}
+          onRequestClose={() => this.setState({ isModalVisible: false })}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text>Editar Bien</Text>              
+              <TextInput
+                style={styles.input}
+                placeholder="Descripción"
+                value={this.state.descripcion}
+                onChangeText={(text) => this.setState({ descripcion: text })}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Subnumero"
+                value={this.state.subnumero}
+                onChangeText={(text) => this.setState({ subnumero: text })}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Material"
+                value={this.state.material}
+                onChangeText={(text) => this.setState({ material: text })}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Color"
+                value={this.state.color}
+                onChangeText={(text) => this.setState({ color: text })}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Marca"
+                value={this.state.marca}
+                onChangeText={(text) => this.setState({ marca: text })}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Modelo"
+                value={this.state.modelo}
+                onChangeText={(text) => this.setState({ modelo: text })}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Serie"
+                value={this.state.serie}
+                onChangeText={(text) => this.setState({ serie: text })}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Estado"
+                value={this.state.estado}
+                onChangeText={(text) => this.setState({ estado: text })}
+              />              
+              <Button title="Guardar Cambios" onPress={this.saveChanges} />
+              <Button title="Cancelar" onPress={() => this.setState({ isModalVisible: false })} />
+            </View>
+          </View>
+        </Modal>
       </View>
     );
   }
@@ -215,5 +309,25 @@ const styles = StyleSheet.create({
     shadowOffset: {width: -2, height: 4},
     shadowOpacity: 0.7,
     shadowRadius: 10,
-  }
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo semitransparente
+  },
+  modalContent: {
+    width: '80%',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  input: {
+    width: '100%',
+    padding: 10,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+  },
 });

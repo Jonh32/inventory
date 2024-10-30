@@ -302,7 +302,8 @@ class APISQLite {
                 `Select bien.id, bien.numero_activo, bien.descripcion 
                     from bien 
                     inner join inventario_bien on inventario_bien.id_bien = bien.id
-                    where inventario_bien.localizado = 0 and inventario_bien.id_inventario = ${id_inventario};`);
+                    where inventario_bien.localizado = 0 and inventario_bien.id_inventario = ${id_inventario};`
+            );
             const result = await statement.executeAsync();
 
             const allRows = await result.getAllAsync();
@@ -325,8 +326,7 @@ class APISQLite {
                     limit 1;`);
             const result = await statement.executeAsync();
 
-            const allRows = await result.getAllAsync();
-            console.log(allRows)
+            const allRows = await result.getAllAsync();            
             return allRows;
         }
         catch(error){
@@ -345,8 +345,7 @@ class APISQLite {
                     where inventario_bien.id_inventario = ${id_inventario} and inventario_bien.localizado = 1 and lugar.id = ${id_lugar};`);
             const result = await statement.executeAsync();
 
-            const allRows = await result.getAllAsync();
-            console.log(allRows)
+            const allRows = await result.getAllAsync();            
             return allRows;
         }
         catch(error){
@@ -364,8 +363,7 @@ class APISQLite {
                     where inventario_bien.id_inventario = ${id_inventario} and inventario_bien.localizado = 0 and lugar.id = ${id_lugar};`);
             const result = await statement.executeAsync();
 
-            const allRows = await result.getAllAsync();
-            console.log(allRows)
+            const allRows = await result.getAllAsync();            
             return allRows;
         }
         catch(error){
@@ -380,8 +378,7 @@ class APISQLite {
                 `select * from inventario order by id DESC limit 1;`);
             const result = await statement.executeAsync();
 
-            const allRows = await result.getAllAsync();
-            console.log(allRows)
+            const allRows = await result.getAllAsync();            
             return allRows;
         }
         catch(error){
@@ -440,6 +437,24 @@ class APISQLite {
         } else {
             console.log("No hay datos para enviar a la API.");
             return false;
+        }
+    }
+
+    async updateBien(id_bien, descripcion, material, marca, color, serie, estado, modelo, subnumero){
+        try{
+            const statement = await this.db.prepareAsync(
+                `UPDATE Bien 
+                SET subnumero = ?, descripcion = ?, material = ?, color = ?, 
+                    marca = ?, serie = ?, estado = ?, modelo = ?
+                WHERE id = ?`
+            );            
+            const result = await statement.executeAsync([subnumero, descripcion, material, color, marca, serie, estado, modelo, id_bien]);
+            
+            console.log("Resultado del update: ", result);
+        return result;
+        }
+        catch(error){
+            print(error)
         }
     }
 }
