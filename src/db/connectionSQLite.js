@@ -449,12 +449,44 @@ class APISQLite {
                 WHERE id = ?`
             );            
             const result = await statement.executeAsync([subnumero, descripcion, material, color, marca, serie, estado, modelo, id_bien]);
-            
-            console.log("Resultado del update: ", result);
+            // Datos a enviar a la API
+            const bienData = {
+                id: id_bien,
+                descripcion,
+                material,
+                marca,
+                color,
+                serie,
+                estado,
+                modelo,
+                subnumero
+            };
+            console.log(bienData);
+            if(await this.updateBienToAPIREST(bienData)){
+                console.log("Resultado del update: ", result);
+                return true;
+            }            
         return result;
         }
         catch(error){
             print(error)
+        }
+    }
+
+    async updateBienToAPIREST(bienData){
+        try{
+
+            // Enviamos la lista como parámetro en la solicitud POST
+            const response = await clienteAxios.put(`/api/datos/bienes/${bienData.id}`, bienData);
+    
+            if (response.status === 200 || response.status === 201) {
+                return true;
+            } else {
+                return false;
+            }   
+        }
+        catch(error){
+            console.log(error)
         }
     }
 }

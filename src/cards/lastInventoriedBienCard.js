@@ -93,7 +93,7 @@ class LastInventoriedBienCard extends Component {
 
   async saveChanges() {
     // Aquí podrías llamar a una función que actualice la base de datos y el API REST    
-    //Llenar en la base de datos
+    //Llenar en la base de datos tanto local como en la API
     const {id, descripcion, subnumero, material, color, marca, modelo, serie, estado} = this.state;
     console.log("ID:", this.state.id);
     console.log("Descripcion:", this.state.descripcion);
@@ -104,10 +104,11 @@ class LastInventoriedBienCard extends Component {
     console.log("Modelo:", this.state.modelo);
     console.log("Serie:", this.state.serie);
     console.log("Estado:", this.state.estado);    
-    await APISQLite.updateBien(id, descripcion, material, marca, color, serie, estado, modelo, subnumero);
-    this.setState({ isModalVisible: false }); // Oculta el modal después de guardar
-
-    //Subir a la API REST
+    if(await APISQLite.updateBien(id, descripcion, material, marca, color, serie, estado, modelo, subnumero)){
+      this.setState({ isModalVisible: false }); // Oculta el modal después de guardar
+      alert("Bien actualizado en local y en API REST");
+      console.log("Bien actualizado en local y en API REST");
+    }
   }
 
   render() {
