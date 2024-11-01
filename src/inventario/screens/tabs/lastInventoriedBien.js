@@ -12,7 +12,7 @@ class LastInventoriedBien extends Component{
             id_edificio: this.props.route.params.data.id_edificio,
             showComponent: false,
             data: [                
-                {id:3,numero_activo:"123446781",descripcion:"Computadora",material:"Plastico",color:"Gris",marca:"Apple",imagen:"sin"}, 
+                //{id:3,numero_activo:"123446781",descripcion:"Computadora",material:"Plastico",color:"Gris",marca:"Apple",imagen:"sin"}, 
             ]
         }
     }

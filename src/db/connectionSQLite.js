@@ -326,7 +326,7 @@ class APISQLite {
                     limit 1;`);
             const result = await statement.executeAsync();
 
-            const allRows = await result.getAllAsync();            
+            const allRows = await result.getAllAsync();
             return allRows;
         }
         catch(error){

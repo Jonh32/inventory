@@ -112,7 +112,7 @@ class LastInventoriedBienCard extends Component {
   }
 
   render() {
-    const {id, numero_activo, descripcion, material, color, marca, modelo, imagen } = this.state;
+    const {id, numero_activo, descripcion, material, color, marca, modelo, imagen, subnumero } = this.state;
     let isModalVisible = this.state.isModalVisible;
     return (
       <View>        
@@ -131,13 +131,14 @@ class LastInventoriedBienCard extends Component {
             buttonColor="rgba(255,255,255,1)"
             hideShadow={false}
           />
-          <Text style={styles.characteristics}>{id}</Text>
-          <Text style={styles.numero_activo}>{numero_activo}</Text>
-          <Text style={styles.descripcion}>{descripcion}</Text>
-          <Text style={styles.characteristics}>{material}</Text>
-          <Text style={styles.characteristics}>{modelo}</Text>
-          <Text style={styles.characteristics}>{color}</Text>
-          <Text style={styles.characteristics}>{marca}</Text>
+          <Text style={styles.characteristics}>ID: {id}</Text>
+          <Text style={styles.numero_activo}>Numero activo: {numero_activo}</Text>
+          <Text style={styles.characteristics}>Bien: {descripcion}</Text>
+          <Text style={styles.characteristics}>Material: {material}</Text>
+          <Text style={styles.characteristics}>Modelo: {modelo}</Text>
+          <Text style={styles.characteristics}>Color: {color}</Text>
+          <Text style={styles.characteristics}>Marca: {marca}</Text>
+          <Text style={styles.characteristics}>Subnumero: {subnumero}</Text>
           <ActionButton
             title="UpdateBien"
             renderIcon={() => (<IconsMaterialIcons name="edit" style={styles.actionButtonIcon} />)}
@@ -156,18 +157,18 @@ class LastInventoriedBienCard extends Component {
         >
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <Text>Editar Bien</Text>              
+              <Text>Editar Bien</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Subnumero"
+                value={String(this.state.subnumero)}
+                onChangeText={(text) => this.setState({ subnumero: text })}
+              />              
               <TextInput
                 style={styles.input}
                 placeholder="Descripción"
                 value={this.state.descripcion}
                 onChangeText={(text) => this.setState({ descripcion: text })}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Subnumero"
-                value={this.state.subnumero}
-                onChangeText={(text) => this.setState({ subnumero: text })}
               />
               <TextInput
                 style={styles.input}
