@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Modal, StyleSheet, Text, View, Image, TextInput, Button } from 'react-native';
+import { Modal, StyleSheet, Text, View, Image, TextInput, Button, TouchableOpacity } from 'react-native';
 import * as FileSystem from 'expo-file-system'
 import { Dimensions } from "react-native";
 import ActionButton from 'react-native-action-button';
@@ -206,8 +206,12 @@ class LastInventoriedBienCard extends Component {
                 value={this.state.estado}
                 onChangeText={(text) => this.setState({ estado: text })}
               />              
-              <Button title="Guardar Cambios" onPress={this.saveChanges} />
-              <Button title="Cancelar" onPress={() => this.setState({ isModalVisible: false })} />
+              <TouchableOpacity style={styles.saveButton} onPress={this.saveChanges}>
+                <Text style={styles.buttonText}>Guardar Cambios</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => this.setState({ isModalVisible: false })}>
+                <Text style={styles.buttonText}>Cancelar</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Modal>
@@ -331,5 +335,28 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
     borderWidth: 1,
     marginBottom: 10,
+  },
+  buttonContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+  },
+  saveButton: {
+    backgroundColor: 'blue',
+    width: '80%',
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  cancelButton: {
+    backgroundColor: 'red',
+    width: '60%',
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
