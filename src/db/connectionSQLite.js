@@ -247,7 +247,7 @@ class APISQLite {
         return values.substring(0, values.lastIndexOf(",")-1)
     }
 
-    async getValuesWithCallback(tableName, callback){
+    async getValuesWithCallback(tableName){
         try{            
             const statement = await this.db.prepareAsync(`SELECT * FROM ${tableName}`);
             const result = await statement.executeAsync();
@@ -475,9 +475,48 @@ class APISQLite {
 
     async updateBienToAPIREST(bienData){
         try{
-
-            // Enviamos la lista como parámetro en la solicitud POST
+            // Enviamos la lista como parámetro en la solicitud PUT
             const response = await clienteAxios.put(`/api/datos/bienes/${bienData.id}`, bienData);
+    
+            if (response.status === 200 || response.status === 201) {
+                return true;
+            } else {
+                return false;
+            }   
+        }
+        catch(error){
+            console.log(error)
+        }
+    }
+
+    async changePlaceInBien(id_bien, id_place){
+        try{
+            const statement = await this.db.prepareAsync(
+                `UPDATE bien 
+                SET id_lugar = ? 
+                WHERE id = ?`
+            );            
+            const result = await statement.executeAsync([id_place, id_bien]);
+            // Datos a enviar a la API
+            const bienData = {
+                id: id_bien,
+                id_lugar: id_place,
+            };
+            if(await this.changePlaceInBienInAPIREST(bienData)){
+                console.log("Resultado del update: ", result);
+                return true;
+            }            
+        return result;
+        }
+        catch(error){
+            print(error)
+        }
+    }
+
+    async changePlaceInBienInAPIREST(bienData){
+        try{
+            // Enviamos la lista como parámetro en la solicitud PUT
+            const response = await clienteAxios.put(`/api/datos/cambiarplace/bienes/${bienData.id}`, bienData);
     
             if (response.status === 200 || response.status === 201) {
                 return true;

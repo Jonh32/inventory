@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Modal, StyleSheet, Text, View, Image, TextInput, Button, TouchableOpacity } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import * as FileSystem from 'expo-file-system'
 import { Dimensions } from "react-native";
 import ActionButton from 'react-native-action-button';
@@ -29,13 +30,18 @@ class LastInventoriedBienCard extends Component {
       imagen: this.props.imagen || "https://http2.mlstatic.com/D_NQ_NP_2X_924991-MLM70333484951_072023-F.webp", // Imagen por defecto
       imagenBytes: this.props.imagenBytes || null,
       textCodigoDeBarrasTextInput: '',  // Nuevo estado para el código de barras
-      isModalVisible: false,  // Estado para controlar la visibilidad del modal
+      isEditModalVisible: false,  // Estado para controlar la visibilidad del modal de editar bien
+      isChangePlaceModal: false,  // Estado para controlar la visibilidad del modal de cambiar de place un bien
+      places: [],
+      selectedPlaceId: 0,
     };
     this.updateImage = this.updateImage.bind(this);
     this.updateBien = this.updateBien.bind(this);
     this.editBien = this.editBien.bind(this);
     this.changeTextInput = this.changeTextInput.bind(this);  // Vinculamos el método
     this.saveChanges = this.saveChanges.bind(this);
+    this.changePlaceInBien = this.changePlaceInBien.bind(this);
+    this.changePlaceInBienInDatabase = this.changePlaceInBienInDatabase.bind(this);
   }
 
   // Método para capturar el texto del código de barras
@@ -88,7 +94,14 @@ class LastInventoriedBienCard extends Component {
 
   async editBien(){
     //Cambia el estado para mostrar el modal
-    this.setState({isModalVisible: true});
+    this.setState({isEditModalVisible: true});
+  }
+
+  async changePlaceInBien(){
+    let _places = await APISQLite.getValuesWithCallback('lugar')
+    this.setState({places: _places})
+    this.setState({isChangePlaceModal: true});
+    console.log(this.state.places);
   }
 
   async saveChanges() {
@@ -105,15 +118,25 @@ class LastInventoriedBienCard extends Component {
     console.log("Serie:", this.state.serie);
     console.log("Estado:", this.state.estado);    
     if(await APISQLite.updateBien(id, descripcion, material, marca, color, serie, estado, modelo, subnumero)){
-      this.setState({ isModalVisible: false }); // Oculta el modal después de guardar
+      this.setState({ isEditModalVisible: false }); // Oculta el modal después de guardar
       alert("Bien actualizado en local y en API REST");
       console.log("Bien actualizado en local y en API REST");
     }
   }
 
+  async changePlaceInBienInDatabase(){
+    const {selectedPlaceId, id, descripcion} = this.state;
+    console.log(selectedPlaceId, id, descripcion)
+    if(await APISQLite.changePlaceInBien(id, selectedPlaceId)){
+      this.setState({isChangePlaceModal: false})
+      alert(`Bien ${descripcion} con id ${id} movido al lugar con id ${selectedPlaceId}`);
+    }
+  }
+
   render() {
     const {id, numero_activo, descripcion, material, color, marca, modelo, imagen, subnumero } = this.state;
-    let isModalVisible = this.state.isModalVisible;
+    let isEditModalVisible = this.state.isEditModalVisible;
+    let isChangePlaceModal = this.state.isChangePlaceModal;
     return (
       <View>        
         <View style={[styles.lastInventoriedBienCard, styles.shadowProp, { paddingTop: 50 }]}> 
@@ -147,13 +170,21 @@ class LastInventoriedBienCard extends Component {
             onPress={this.editBien}
             hideShadow={false}
           />
+          <ActionButton
+            title="changePlace"
+            renderIcon={() => (<IconsMaterialIcons name="apartment" style={styles.actionButtonIcon} />)}
+            shadowStyle={styles.floatinLeftBottomBtn}
+            buttonColor="rgba(255,255,255,1)"
+            onPress={this.changePlaceInBien}
+            hideShadow={false}
+          />
         </View>
-        {/* Modal para el formulario de edición */}
+        {/* Modal para el formulario de edición del bien */}
         <Modal
           animationType="slide"
           transparent={true}
-          visible={isModalVisible}
-          onRequestClose={() => this.setState({ isModalVisible: false })}
+          visible={isEditModalVisible}
+          onRequestClose={() => this.setState({ isEditModalVisible: false })}
         >
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
@@ -209,7 +240,37 @@ class LastInventoriedBienCard extends Component {
               <TouchableOpacity style={styles.saveButton} onPress={this.saveChanges}>
                 <Text style={styles.buttonText}>Guardar Cambios</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.cancelButton} onPress={() => this.setState({ isModalVisible: false })}>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => this.setState({ isEditModalVisible: false })}>
+                <Text style={styles.buttonText}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+        {/* Modal para el formulario de cambiar de lugar un bien */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isChangePlaceModal}
+          onRequestClose={() => this.setState({ isChangePlaceModal: false })}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text>Cambiar de lugar al bien: {this.state.descripcion} con id: {this.state.id}</Text>
+              <Picker
+                selectedValue={this.state.selectedPlaceId}
+                style={styles.input}
+                onValueChange={(itemValue) => this.setState({ selectedPlaceId: itemValue })}
+              >
+                <Picker.Item label="Selecciona el nuevo edificio" value="" />
+                {this.state.places.map((place) => (
+                  <Picker.Item key={place.id} label={place.edificio} value={place.id} />
+                ))}
+              </Picker>
+              
+              <TouchableOpacity style={styles.saveButton} onPress={this.changePlaceInBienInDatabase}>
+                <Text style={styles.buttonText}>Guardar Cambios</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => this.setState({ isChangePlaceModal: false })}>
                 <Text style={styles.buttonText}>Cancelar</Text>
               </TouchableOpacity>
             </View>
@@ -284,6 +345,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: "10%",
     right: "1%",
+    shadowColor: "green",
+    borderColor: "green",
+    borderWidth: 3,
+    borderRadius: 35,
+  },
+  floatinLeftBottomBtn: {
+    position: 'absolute',
+    top: "5%",
+    left: "50%",
+    transform: [{ translateX: -60 }],
     shadowColor: "green",
     borderColor: "green",
     borderWidth: 3,

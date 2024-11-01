@@ -47,7 +47,7 @@ class ListLocated extends Component{
         const {id_inventario, id_edificio} = this.state;
         let dataBaseOPen = await APISQLite.abrirBaseDeDatos() 
         if(dataBaseOPen){ 
-            let _data = await APISQLite.getLastBienLocatedFromPlace(id_inventario, id_edificio);
+            let _data = await APISQLite.getBienesLocatedFromPlace(id_inventario, id_edificio);
             this.setState({data:_data}) 
             this.setState({showComponent:true}) 
         }
