@@ -86,16 +86,11 @@ class APISQLite {
             console.log("La base de datos: " + databaseName + " ya existe");
             console.log("En la dirección: " + sqlLiteDir + databaseName);
             this.db = await SQLite.openDatabaseAsync(databaseName)
-            const allRows = await this.db.getAllAsync(`SELECT name FROM sqlite_master WHERE type='table';`);
-            for (const row of allRows) {
-                console.log("Tabla:", row);
-            }
         }
 
         const dbPathh = FileSystem.documentDirectory + 'SQLite/inventary.sqlite';
         this.dbInfoo = await FileSystem.getInfoAsync(dbPathh);
         console.log('Tamaño del archivo de la base de datos:', this.dbInfoo.size);
-        console.log("Direccion de la BD: ", dbPathh)
         return true;
     }    
 
