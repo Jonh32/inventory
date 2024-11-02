@@ -34,6 +34,7 @@ class LastInventoriedBienCard extends Component {
       isChangePlaceModal: false,  // Estado para controlar la visibilidad del modal de cambiar de place un bien
       places: [],
       selectedPlaceId: 0,
+      edificio: this.props.edificio,
     };
     this.updateImage = this.updateImage.bind(this);
     this.updateBien = this.updateBien.bind(this);
@@ -135,6 +136,7 @@ class LastInventoriedBienCard extends Component {
 
   render() {
     const {id, numero_activo, descripcion, material, color, marca, modelo, imagen, subnumero } = this.state;
+    const {edificio} = this.state;
     let isEditModalVisible = this.state.isEditModalVisible;
     let isChangePlaceModal = this.state.isChangePlaceModal;
     return (
@@ -261,7 +263,7 @@ class LastInventoriedBienCard extends Component {
                 style={styles.input}
                 onValueChange={(itemValue) => this.setState({ selectedPlaceId: itemValue })}
               >
-                <Picker.Item label="Selecciona el nuevo edificio" value="" />
+                <Picker.Item label={"Lugar actual del bien: "+ edificio || "Selecciona el nuevo edificio"} value="" />
                 {this.state.places.map((place) => (
                   <Picker.Item key={place.id} label={place.edificio} value={place.id} />
                 ))}

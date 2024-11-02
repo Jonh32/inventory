@@ -10,6 +10,7 @@ class LastInventoriedBien extends Component{
         this.state = {
             id_inventario: this.props.route.params.data.id_inventario,
             id_edificio: this.props.route.params.data.id_edificio,
+            edificio: '',
             showComponent: false,
             data: [                
                 //{id:3,numero_activo:"123446781",descripcion:"Computadora",material:"Plastico",color:"Gris",marca:"Apple",imagen:"sin"}, 
@@ -19,6 +20,7 @@ class LastInventoriedBien extends Component{
 
     render(){
         const data = this.state.data
+        const edificio = this.state.edificio
         return(
             <SafeAreaView style={styles.center}>
                 <CodeBar/>
@@ -40,6 +42,7 @@ class LastInventoriedBien extends Component{
                                     serie={item.serie}
                                     estado={item.estado}
                                     imagen={item.imagen}
+                                    edificio={edificio} //Nombre del edificio
                                 /> : null
                         )
                     }
@@ -56,6 +59,7 @@ class LastInventoriedBien extends Component{
         let dataBaseOPen = await APISQLite.abrirBaseDeDatos()
         if(dataBaseOPen){ 
           let data = await APISQLite.getLastBienLocatedFromPlace(id_inventario, id_edificio)
+          let edificio_name = await APISQLite.getPlaceUsingID(this.state.id_edificio)
           const updateData = data.map(item => {
             return{
                 ...item, //Deja todos los campos de mi arreglo igual y solo cambia imagen
@@ -64,6 +68,7 @@ class LastInventoriedBien extends Component{
         })
         //Cambiamos data:data por data:updateData que es la información con la imagen bien, sin el base64
         this.setState({data:updateData})
+        this.setState({edificio:edificio_name[0].edificio})
         this.setState({showComponent:true})
         }        
     } 

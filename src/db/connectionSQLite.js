@@ -334,6 +334,20 @@ class APISQLite {
         }
     }
 
+    async getPlaceUsingID(lugar_id){
+        try{
+            const statement = await this.db.prepareAsync(
+                `Select edificio From lugar where id = ${lugar_id};`);
+            const result = await statement.executeAsync();
+
+            const allRows = await result.getAllAsync();
+            return allRows;
+        }
+        catch(error){
+            console.log("Error: ", error)
+        }
+    }
+
     //Bienes localizados del place
     async getBienesLocatedFromPlace(id_inventario, id_lugar){
         try{
