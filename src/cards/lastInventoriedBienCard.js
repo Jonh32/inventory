@@ -7,6 +7,7 @@ import ActionButton from 'react-native-action-button';
 import IconsMaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import APISQLite from "../db/connectionSQLite"
+import eventEmitter from "../emiter/eventEmitter";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -131,6 +132,7 @@ class LastInventoriedBienCard extends Component {
     if(await APISQLite.changePlaceInBien(id, selectedPlaceId)){
       this.setState({isChangePlaceModal: false})
       alert(`Bien ${descripcion} con id ${id} movido al lugar con id ${selectedPlaceId}`);
+      eventEmitter.emit('databaseUpdated_place');
     }
   }
 

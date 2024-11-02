@@ -2,6 +2,7 @@ import React, { Component } from "react"
 import { SafeAreaView, StyleSheet,FlatList } from "react-native" 
 import BienCard from "../../../cards/bienCards" 
 import APISQLite from "../../../db/connectionSQLite"
+import eventEmitter from "../../../emiter/eventEmitter"
 
 class ListLocated extends Component{
     constructor(props){
@@ -18,6 +19,7 @@ class ListLocated extends Component{
                 {id:3,numero_activo:"123446781",descripcion:"Computadora"}, 
             ]
         }
+        this.loadData = this.loadData.bind(this);
     }
     
     render(){
@@ -44,15 +46,26 @@ class ListLocated extends Component{
         )
     }
 
-    async componentDidMount(){ 
-        const {id_inventario, id_edificio} = this.state;
-        let dataBaseOPen = await APISQLite.abrirBaseDeDatos() 
-        if(dataBaseOPen){ 
+    async loadData() {
+        const { id_inventario, id_edificio } = this.state;
+        let dataBaseOPen = await APISQLite.abrirBaseDeDatos();
+        if (dataBaseOPen) {
             let _data = await APISQLite.getBienesLocatedFromPlace(id_inventario, id_edificio);
-            this.setState({data:_data}) 
-            this.setState({showComponent:true}) 
+            this.setState({ data: _data, showComponent: true });
         }
-        
+    }
+
+    async componentDidMount(){ 
+        this.loadData();
+        //Escuchar el evento
+        eventEmitter.on('databaseUpdated', this.loadData);
+        eventEmitter.on('databaseUpdated_place', this.loadData);
+    }
+
+    async componentWillUnmount() {
+        // Anular la suscripción para evitar fugas de memoria
+        eventEmitter.off('databaseUpdated', this.loadData);
+        eventEmitter.off('databaseUpdated_place', this.loadData);
     }
 }
 
