@@ -29,7 +29,7 @@ class ListGeneraLocated extends Component{
                         return(
                             this.state.showComponent?
                             <BienCard
-                                id_inventario={item.id}
+                                id_bien={item.id}
                                 numero_activo={item.numero_activo}    
                                 descripcion={item.descripcion}
                             />

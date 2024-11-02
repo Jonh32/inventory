@@ -4,6 +4,7 @@ class BienCard extends Component{
     constructor(props){
         super(props)
         this.state={
+            id_bien: this.props.id_bien,
             numero_activo: this.props.numero_activo,
             descripcion: this.props.descripcion,
         }
@@ -12,10 +13,12 @@ class BienCard extends Component{
     render(){
         const numero_activo = this.state.numero_activo
         const descripcion = this.state.descripcion
+        const id_bien = this.state.id_bien
         return(
             <View style={styles.bienCard}>
-                <Text style={styles.numero_activo}>{numero_activo}</Text>
-                <Text style={styles.descripcion}>{descripcion}</Text>
+                <Text style={styles.numero_activo}>ID: {id_bien}</Text>
+                <Text style={styles.numero_activo}>Número activo: {numero_activo}</Text>
+                <Text style={styles.descripcion}>Descripción: {descripcion}</Text>
             </View>
         )
     }

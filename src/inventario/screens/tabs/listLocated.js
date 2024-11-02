@@ -30,7 +30,8 @@ class ListLocated extends Component{
                         renderItem={({item}) => { 
                             return( 
                                 this.state.showComponent?       
-                                <BienCard  
+                                <BienCard
+                                    id_bien={item.id}
                                     numero_activo={item.numero_activo}    
                                     descripcion={item.descripcion}                              
                                 /> 
