@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { StyleSheet, Text, View, Image, TextInput, Dimensions } from 'react-native';
-//import APISQLite from "../db/connectionSQLite"
+import APISQLite from "../db/connectionSQLite"
+import eventEmitter from "../emiter/eventEmitter";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -11,14 +12,39 @@ class CodeBar extends Component{
     constructor(props) {
         super(props);
         this.state = {
+          id_edificio: this.props.id_edificio,
+          id_inventario: this.props.id_inventario,
           textCodigoDeBarrasTextInput: '',  // Nuevo estado para el código de barras
         };
         this.changeTextInput = this.changeTextInput.bind(this);  // Vinculamos el método
+        this.onDatabaseChange = this.props.onDatabaseChange;
     }
 
-    changeTextInput(text) {
-        this.setState({ textCodigoDeBarrasTextInput: text.nativeEvent.text });
-        console.log(text.nativeEvent.text);
+    async changeTextInput(text) {
+        let codigoDeBarrasText = text.nativeEvent.text; 
+        this.setState({ textCodigoDeBarrasTextInput: codigoDeBarrasText });
+        //Verificar si el texto ingresado pertenece a un número activo de un bien existente y devuelve el id del bien
+        const id_bien = await APISQLite.verifyIfNumeroActivoExists(codigoDeBarrasText);
+        console.log("ID del bien obtenido con el numero_activo",id_bien);
+        if (id_bien == undefined){
+          console.log("El número activo ingresado no existe");
+          alert("El número activo " + codigoDeBarrasText + " no existe");
+          return;
+        }
+        //Cambiar el campo located usando el id_inventario y el id_bien que obtuvimos
+        const {id_inventario} = this.state;
+        if(await APISQLite.changeLocatedInventarioBien(id_inventario, id_bien)){
+          console.log("Bien " + id_bien + " localizado en el inventario " + id_inventario);
+          alert("Bien " + id_bien + " localizado en el inventario " + id_inventario);
+          if (this.props.onDatabaseChange) {
+            this.props.onDatabaseChange();
+            //Emitir el evento de actualización de la base de datos
+            eventEmitter.emit('databaseUpdated');
+          } 
+          return;
+        }
+        console.log("No se pudo localizar el bien");
+        alert("No se pudo localizar el bien");
     }
 
     render(){

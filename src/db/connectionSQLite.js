@@ -515,7 +515,7 @@ class APISQLite {
                 console.log("Resultado del update: ", result);
                 return true;
             }            
-        return result;
+            return result;
         }
         catch(error){
             print(error)
@@ -526,6 +526,62 @@ class APISQLite {
         try{
             // Enviamos la lista como parámetro en la solicitud PUT
             const response = await clienteAxios.put(`/api/datos/cambiarplace/bienes/${bienData.id}`, bienData);
+    
+            if (response.status === 200 || response.status === 201) {
+                return true;
+            } else {
+                return false;
+            }   
+        }
+        catch(error){
+            console.log(error)
+        }
+    }
+
+    async verifyIfNumeroActivoExists(numero_activo){
+        try{
+            const statement = await this.db.prepareAsync(
+                `Select id from bien where numero_activo = ${numero_activo}`
+            );            
+            const result = await statement.executeAsync();
+            const allRows = await result.getAllAsync();                        
+            const getID = allRows[0].id;
+            if(getID != undefined){
+                return getID;
+            }
+            return undefined;
+        }
+        catch(error){
+            print(error)
+        }
+    }
+
+    async changeLocatedInventarioBien(id_inventario, id_bien){
+        try{
+            const statement = await this.db.prepareAsync(
+                `Update inventario_bien set localizado = 1 where id_inventario = ? and id_bien = ?`
+            );            
+            const result = await statement.executeAsync([id_inventario, id_bien]);
+            // Datos a enviar a la API
+            const inventario_bien_updated = {
+                id_inventario: id_inventario,
+                id_bien: id_bien,
+            };
+            if(await this.changeLocatedInventarioBienAPIREST(inventario_bien_updated)){
+                console.log("Resultado del update: ", result);
+                return true;
+            }            
+            return false;
+        }
+        catch(error){
+            print(error)
+        }
+    }
+
+    async changeLocatedInventarioBienAPIREST(inventario_bien_updated){
+        try{
+            // Enviamos la lista como parámetro en la solicitud PUT
+            const response = await clienteAxios.put(`/api/inventario_bien/cambiarlocated/`, inventario_bien_updated);
     
             if (response.status === 200 || response.status === 201) {
                 return true;
