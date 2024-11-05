@@ -70,6 +70,7 @@ class APISQLite {
                 localizado INTEGER,
                 id_bien INTEGER,
                 id_inventario INTEGER,
+                last_modification TEXT,
                 FOREIGN KEY(id_bien) REFERENCES bien (id),
                 FOREIGN KEY(id_inventario) REFERENCES inventario (id),
                 UNIQUE (id_bien, id_inventario)
@@ -317,7 +318,7 @@ class APISQLite {
                     inner join inventario_bien on inventario_bien.id_bien = bien.id 
                     inner join lugar on lugar.id = bien.id_lugar
                     where inventario_bien.id_inventario = ${id_inventario} and inventario_bien.localizado = 1 and lugar.id = ${id_lugar}
-                    ORDER BY bien.id DESC 
+                    ORDER BY inventario_bien.last_modification DESC
                     limit 1;`);
             const result = await statement.executeAsync();
 
@@ -399,7 +400,21 @@ class APISQLite {
         try {
             // Obtener todos los bienes
             const bienes = await this.getValuesWithCallback("bien");
-    
+            //Obtener fecha y hora actual en formato 2024/11/04 23:23:23
+            const obtenerFechaActual = () => {
+                const fechaActual = new Date(); // Obtiene la fecha y hora actuales
+                const año = fechaActual.getFullYear();
+                const mes = (fechaActual.getMonth() + 1).toString().padStart(2, '0'); // Meses empiezan en 0
+                const día = fechaActual.getDate().toString().padStart(2, '0'); // Día con dos dígitos
+                const horas = fechaActual.getHours().toString().padStart(2, '0'); // Horas con dos dígitos
+                const minutos = fechaActual.getMinutes().toString().padStart(2, '0'); // Minutos con dos dígitos
+                const segundos = fechaActual.getSeconds().toString().padStart(2, '0'); // Segundos con dos dígitos
+            
+                // Formato YYYY/MM/DD HH:MM:SS
+                const fechaFormateada = `${año}/${mes}/${día} ${horas}:${minutos}:${segundos}`;
+                return fechaFormateada;
+            };
+            const fechaHora = obtenerFechaActual();
             if (bienes && bienes.length > 0) {
                 // Iterar sobre cada bien y asociarlo en la tabla inventario_bien
                 for (const row of bienes) {
@@ -407,14 +422,15 @@ class APISQLite {
                     
                     // Preparar e insertar el registro en inventario_bien
                     const statement = await this.db.prepareAsync(
-                        `INSERT INTO inventario_bien (id_inventario, id_bien, localizado) VALUES (?, ?, 0)`
+                        `INSERT INTO inventario_bien (id_inventario, id_bien, localizado, last_modification) VALUES (?, ?, 0, ?)`
                     );
-                    await statement.executeAsync([id_inventario, id_bien]);
+                    await statement.executeAsync([id_inventario, id_bien, fechaHora]);
                 }
                 const inventarioBienData = bienes.map(row => ({
                     id_inventario: id_inventario,
                     id_bien: row.id,
-                    localizado: 0
+                    localizado: 0,
+                    last_modification: fechaHora
                 }));
                 if(await this.fillInventoryBienToAPIREST(inventarioBienData)){
                     return true;
@@ -556,16 +572,17 @@ class APISQLite {
         }
     }
 
-    async changeLocatedInventarioBien(id_inventario, id_bien){
+    async changeLocatedInventarioBien(id_inventario, id_bien, last_modification){
         try{
             const statement = await this.db.prepareAsync(
-                `Update inventario_bien set localizado = 1 where id_inventario = ? and id_bien = ?`
+                `Update inventario_bien set localizado = 1, last_modification = ? where id_inventario = ? and id_bien = ?`
             );            
-            const result = await statement.executeAsync([id_inventario, id_bien]);
+            const result = await statement.executeAsync([last_modification, id_inventario, id_bien]);
             // Datos a enviar a la API
             const inventario_bien_updated = {
                 id_inventario: id_inventario,
                 id_bien: id_bien,
+                last_modification: last_modification
             };
             if(await this.changeLocatedInventarioBienAPIREST(inventario_bien_updated)){
                 console.log("Resultado del update: ", result);

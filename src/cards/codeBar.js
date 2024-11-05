@@ -32,8 +32,22 @@ class CodeBar extends Component{
           return;
         }
         //Cambiar el campo located usando el id_inventario y el id_bien que obtuvimos
+        const obtenerFechaActual = () => {
+          const fechaActual = new Date(); // Obtiene la fecha y hora actuales
+          const año = fechaActual.getFullYear();
+          const mes = (fechaActual.getMonth() + 1).toString().padStart(2, '0'); // Meses empiezan en 0
+          const día = fechaActual.getDate().toString().padStart(2, '0'); // Día con dos dígitos
+          const horas = fechaActual.getHours().toString().padStart(2, '0'); // Horas con dos dígitos
+          const minutos = fechaActual.getMinutes().toString().padStart(2, '0'); // Minutos con dos dígitos
+          const segundos = fechaActual.getSeconds().toString().padStart(2, '0'); // Segundos con dos dígitos
+      
+          // Formato YYYY/MM/DD HH:MM:SS
+          const fechaFormateada = `${año}-${mes}-${día} ${horas}:${minutos}:${segundos}`;
+          return fechaFormateada;
+        };
+        const fechaHora = obtenerFechaActual();
         const {id_inventario} = this.state;
-        if(await APISQLite.changeLocatedInventarioBien(id_inventario, id_bien)){
+        if(await APISQLite.changeLocatedInventarioBien(id_inventario, id_bien, fechaHora)){
           console.log("Bien " + id_bien + " localizado en el inventario " + id_inventario);
           alert("Bien " + id_bien + " localizado en el inventario " + id_inventario);
           if (this.props.onDatabaseChange) {

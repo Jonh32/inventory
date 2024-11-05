@@ -48,8 +48,9 @@ class ListGeneraLocated extends Component{
             const {id_inventario} = this.state;
             //const id_inventario = this.props.route.params.data.id_inventario 
             let data = await APISQLite.getBienesLocalizados(id_inventario)
+            console.log("Datos de data:", data)
             this.setState({data:data})
-            this.setState({showComponent:true})    
+            this.setState({showComponent:true})
         }
     }
 }
